@@ -1,11 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
-from django.core.validators import RegexValidator
+from .utils import char_validator
+
 from uuid import uuid4
 # Create your models here.
-
-char_validator = RegexValidator(r'^[a-zA-Z]+$', 'Only characters are allowed.')
 
 class UserManager(BaseUserManager):
 

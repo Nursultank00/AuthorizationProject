@@ -12,8 +12,7 @@ class SignupAPIView(APIView):
         if serializer.is_valid():
             try:
                 serializer.save()
-                Response(serializer.data, status=status.HTTP_201_CREATED)
-            except:
-                Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"message: ": e.message}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
