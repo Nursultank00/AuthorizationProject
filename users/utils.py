@@ -75,7 +75,7 @@ class SpecialCharacterValidator:
         pass
 
     def validate(self, password, user=None):
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        if not re.search(r'[-_!@#$%^&*(),.?":{}|<>]', password):
             raise ValidationError(
                 _("This password must contain at least 1 special case character."),
                 code="no special character"

@@ -1,9 +1,9 @@
 from django.urls import path
-from users.views import SignupAPIView
-from rest_framework.authtoken.views import obtain_auth_token
+from users.views import SignupAPIView, LoginAPIView, TokenRefreshView, LogoutAPIView
 
 urlpatterns = [
-    path('authproject/login', obtain_auth_token, name = 'authproject-login'),
-    path('authproject/signup', SignupAPIView.as_view(), name = 'authproject-signup'),
-    # path('authproject/logout')
+    path('login/', LoginAPIView.as_view(), name = 'authproject-login'),
+    path('login/refresh/', TokenRefreshView.as_view(), name = 'authproject-login-refresh'),
+    path('signup/', SignupAPIView.as_view(), name = 'authproject-signup'),
+    path('logout/', LogoutAPIView.as_view(), name = 'authporject-logout')
 ]

@@ -18,3 +18,12 @@ class SignupSerializer(serializers.ModelSerializer):
                                         email = validated_date['email'],
                                         password = validated_date['password'])
         return user
+    
+class LoginSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = User
+        fields = ['username', 'password']
+
+class LogoutSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
