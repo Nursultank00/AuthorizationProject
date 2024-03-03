@@ -6,7 +6,7 @@ class UserAdmin(UserAdmin):
     add_form = UserCreationForm
     form = UserChangeForm
     model = User
-    list_display = ('username', 'email', 'is_staff',)
+    list_display = ('username', 'email', 'is_staff', 'email_verified')
     list_filter = ('username', 'email', 'is_staff',)
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),

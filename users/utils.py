@@ -1,11 +1,22 @@
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
 from django.utils.translation import gettext as _
 
 import re
 
 char_validator = RegexValidator(r'^[a-zA-Z]+$', 'Only characters are allowed.')
 
+# Send email util
+class EmailUtil:
+    @staticmethod
+    def send_email(data):
+        email = EmailMessage(subject=data['email_subject'],
+                             body=data['email_body'],
+                             to = [data['to_email']])
+        email.send()
+
+# Password Validators
 class LengthValidator:
     def __init__(self, min_length=8, max_length=15):
         self.min_length = min_length

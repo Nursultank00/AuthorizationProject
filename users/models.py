@@ -29,6 +29,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length = 30, unique = True, validators = [char_validator])
     email = models.EmailField(unique = True)
     is_staff = models.BooleanField(default = False)
+    is_superuser = models.BooleanField(default = False)
+    email_verified = models.BooleanField(default = False)
     created_at = models.DateTimeField(auto_now_add = True)
 
     USERNAME_FIELD = 'username'
@@ -37,3 +39,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+    
+class ConfirmationCode(models.Model):
+    user = models.OneToOneField(User, related_name = 'code', on_delete = models.CASCADE)
+    code = models.TextField()
+
+    def __str__(self):
+        return self.user.username + "'s confirmation code"
