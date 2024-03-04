@@ -25,5 +25,11 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'password']
 
+class ResendMailSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = User
+        fields = ['email']
+
 class LogoutSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()

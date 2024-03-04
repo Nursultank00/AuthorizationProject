@@ -1,7 +1,8 @@
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.utils.translation import gettext as _
+from django.template.loader import render_to_string
 
 import re
 
@@ -11,10 +12,22 @@ char_validator = RegexValidator(r'^[a-zA-Z]+$', 'Only characters are allowed.')
 class EmailUtil:
     @staticmethod
     def send_email(data):
-        email = EmailMessage(subject=data['email_subject'],
-                             body=data['email_body'],
-                             to = [data['to_email']])
+        # email = EmailMessage(subject=data['email_subject'],
+        #                      body=data['email_body'],
+        #                      to = [data['to_email']])
+        
+        # link = "https://neobis-front-auth-five.vercel.app/confirm?token="+data['token']
+        context ={
+            'link_app': "http://127.0.0.1:8000/authproject/users/email-verify/?token="+data['token'],
+            'user_username' : data['username']
+        }
+        html_content = render_to_string(
+            'email.html', context=context
+        )
+        email = EmailMultiAlternatives(subject = data['email_subject'], to = [data['to_email']])
+        email.attach_alternative(html_content, "text/html")
         email.send()
+
 
 # Password Validators
 class LengthValidator:
