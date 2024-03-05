@@ -5,8 +5,10 @@ services:
   db2:
     image: postgres:latest
     restart: always
+    expose:
+      - "5433"
     ports:
-      - 5433:5432
+      - "5433:5433"
     env_file:
       - .env
     volumes:
