@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.utils.translation import gettext as _
 from django.template.loader import render_to_string
+from decouple import config
 
 import re
 
@@ -18,7 +19,7 @@ class EmailUtil:
         
         # link = "https://neobis-front-auth-five.vercel.app/confirm?token="+data['token']
         context ={
-            'link_app': "http://127.0.0.1:8000/authproject/users/email-verify/?token="+data['token'],
+            'link_app': config('EMAIL_LINK')+data['token'],
             'user_username' : data['username']
         }
         html_content = render_to_string(
