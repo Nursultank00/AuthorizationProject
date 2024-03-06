@@ -5,7 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 # Create your views here.
-from users.serializers import SignupSerializer, LoginSerializer, LogoutSerializer, ResendMailSerializer
+from users.serializers import SignupSerializer, LoginSerializer, LogoutSerializer, MailSerializer
 
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -186,14 +186,14 @@ class LogoutAPIView(APIView):
             return Response({"Error": "Unable to log out."}, status=status.HTTP_400_BAD_REQUEST)
         
 class ResendVerifyEmailAPIView(APIView):
-    serializer_class = ResendMailSerializer
+    serializer_class = MailSerializer
     @swagger_auto_schema(
         tags=['Registration'],
         operation_description="Этот эндпоинт предоставляет "
                               "возможность пользователю "
                               "переотправить токен для "
                               "верификации почты. ",
-        request_body = ResendMailSerializer,
+        request_body = MailSerializer,
         responses={
             status.HTTP_200_OK: SuccessMessageSerializer,
             status.HTTP_201_CREATED: SuccessMessageSerializer,
@@ -206,24 +206,42 @@ class ResendVerifyEmailAPIView(APIView):
         try:
             user = User.objects.get(email=email)
             if user.email_verified:
-                return Response({'Message':'User is already verified'}, status=status.HTTP_200_OK)
+                return Response({'Message':'User is already verified.'}, status=status.HTTP_200_OK)
             token = RefreshToken().for_user(user).access_token
             token.set_exp(lifetime=timedelta(minutes=5))
 
             user_code = ConfirmationCode.objects.get(user = user)
             user_code.code = str(token)
             user_code.save()
-            
-            # current_site = get_current_site(request).domain
-            # relativeLink = reverse('authproject-email-verify')
-            # absurl = 'http://'+current_site+relativeLink+"?token="+str(token)
-            # email_body = 'Hi '+ user.username + '! The link below is to verify your email \n' + absurl
 
             data = {'token':str(token),
                     'to_email':user.email,
                     'email_subject':'Verify your email',
                     'username': user.username}
             EmailUtil.send_email(data)
-            return Response({'Message':'The verification email has been sent'}, status=status.HTTP_201_CREATED)
+            return Response({'Message':'The verification email has been sent.'}, status=status.HTTP_201_CREATED)
         except User.DoesNotExist:
-            return Response({'Message':'No such user, register first'})
+            return Response({'Message':'No such user, register first.'})
+        
+class DeleteUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        tags=['Authorization'],
+        operation_description="Этот эндпоинт предоставляет "
+                              "возможность пользователю "
+                              "удалить собственный аккаунтю ",
+        request_body = MailSerializer,
+        responses={
+            status.HTTP_200_OK: SuccessMessageSerializer,
+            status.HTTP_201_CREATED: SuccessMessageSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorMessageSerializer,
+        },
+    )
+    def delete(self, request, *args, **kwargs):
+        email = request.data['email']
+        try:
+            user = User.objects.get(email = email)
+        except Exception as e:
+            return Response({'Message': 'There is no user with this email.'}, status=status.HTTP_404_BAD_REQUEST)
+        user.delete()
+        return Response({'Message': 'User has been successfully deleted.'}, status=status.HTTP_200_OK)

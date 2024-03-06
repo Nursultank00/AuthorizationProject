@@ -25,7 +25,7 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'password']
 
-class ResendMailSerializer(serializers.ModelSerializer):
+class MailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
