@@ -31,7 +31,7 @@ class MailSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email']
 
-class LogoutSerializer(serializers.Serializer):
+class RefreshTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
 
 class ChangePasswordSerializer(serializers.Serializer):

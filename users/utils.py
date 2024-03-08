@@ -1,3 +1,5 @@
+import re
+
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage, EmailMultiAlternatives
@@ -5,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.template.loader import render_to_string
 from decouple import config
 
-import re
+
 
 char_validator = RegexValidator(r'^[a-zA-Z]+$', 'Only characters are allowed.')
 
@@ -109,3 +111,4 @@ class SpecialCharacterValidator:
         return _(
             "Your password must contain special characters."
         )
+    

@@ -12,7 +12,7 @@ from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from users.serializers import SignupSerializer, LoginSerializer, LogoutSerializer, \
+from users.serializers import SignupSerializer, LoginSerializer, RefreshTokenSerializer, \
                             MailSerializer, ChangePasswordSerializer
 from .models import User, ConfirmationCode
 from .utils import EmailUtil
@@ -156,14 +156,14 @@ class LogoutAPIView(APIView):
                               "возможность пользователю "
                               "разлогиниться из приложения "
                               "с помощью токена обновления (Refresh Token). ",
-        request_body = LogoutSerializer,
+        request_body = RefreshTokenSerializer,
         responses={
             status.HTTP_200_OK: SuccessMessageSerializer,
             status.HTTP_400_BAD_REQUEST: ErrorMessageSerializer,
         },
     )
     def post(self, request, *args, **kwargs):
-        serializer = LogoutSerializer(data = request.data)
+        serializer = RefreshTokenSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
 
         refresh_token = serializer.validated_data["refresh_token"]
@@ -219,8 +219,8 @@ class DeleteUserAPIView(APIView):
         tags=['Authorization'],
         operation_description="Этот эндпоинт предоставляет "
                               "возможность пользователю "
-                              "удалить собственный аккаунтю ",
-        request_body = MailSerializer,
+                              "удалить собственный аккаунт. ",
+        request_body = RefreshTokenSerializer,
         responses={
             status.HTTP_200_OK: SuccessMessageSerializer,
             status.HTTP_201_CREATED: SuccessMessageSerializer,
@@ -228,12 +228,8 @@ class DeleteUserAPIView(APIView):
         },
     )
     def delete(self, request, *args, **kwargs):
-        email = request.data['email']
         refresh_token = request.data['refresh_token']
-        try:
-            user = User.objects.get(email = email)
-        except Exception as e:
-            return Response({'Message': 'There is no user with this email.'}, status=status.HTTP_404_BAD_REQUEST)
+        user = request.user
         token = RefreshToken(refresh_token)
         token.blacklist()
         user.delete()
@@ -242,7 +238,17 @@ class DeleteUserAPIView(APIView):
 
 class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @swagger_auto_schema(
+        tags=['Authorization'],
+        operation_description="Этот эндпоинт предоставляет "
+                              "возможность пользователю "
+                              "изменить пароль аккаунта. ",
+        request_body = ChangePasswordSerializer,
+        responses={
+            status.HTTP_200_OK: SuccessMessageSerializer,
+            status.HTTP_400_BAD_REQUEST: ErrorMessageSerializer,
+        },
+    )
     def post(self, request, *args, **kwargs):
         serializer =  ChangePasswordSerializer(data = request.data)
         serializer.is_valid(raise_exception = True)

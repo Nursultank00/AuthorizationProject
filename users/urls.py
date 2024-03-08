@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from users.views import SignupAPIView, LoginAPIView, TokenRefreshView,\
                         LogoutAPIView, VerifyEmailAPIView, ResendVerifyEmailAPIView,\
@@ -12,5 +12,6 @@ urlpatterns = [
     path('email-verify/', VerifyEmailAPIView.as_view(), name = 'authproject-email-verify'),
     path('resend-email/', ResendVerifyEmailAPIView.as_view(), name = 'authproject-resend-email'),
     path('delete-user/', DeleteUserAPIView.as_view(), name = 'authproject-delete'),
-    path('change-password/', ChangePasswordAPIView.as_view(), name = 'authproject-change-password')
+    path('change-password/', ChangePasswordAPIView.as_view(), name = 'authproject-change-password'),
+    path('password-reset/', include('django_rest_passwordreset.urls'), name='password_reset'),
 ]
