@@ -1,25 +1,23 @@
+import jwt
+from datetime import timedelta
+
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.views import Response, status
-from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-# Create your views here.
-from users.serializers import SignupSerializer, LoginSerializer, LogoutSerializer, MailSerializer
-
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
+from users.serializers import SignupSerializer, LoginSerializer, LogoutSerializer, \
+                            MailSerializer, ChangePasswordSerializer
 from .models import User, ConfirmationCode
 from .utils import EmailUtil
 from .swagger import LoginOpenAPISerializer, ErrorMessageSerializer, SuccessMessageSerializer
 
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-
-import jwt
-from datetime import timedelta
 class SignupAPIView(APIView):
     permission_classes = [AllowAny]
     serializer_class = SignupSerializer
@@ -52,14 +50,6 @@ class SignupAPIView(APIView):
             token = RefreshToken().for_user(user).access_token
             token.set_exp(lifetime=timedelta(minutes=5))
             ConfirmationCode.objects.create(user = user, code = str(token))
-            # current_site = get_current_site(request).domain
-            # relativeLink = reverse('authproject-email-verify')
-            
-            # absurl = 'http://'+current_site+relativeLink+"?token="+str(token)
-            # email_body = 'Hi '+ user.username + '! The link below is to verify your email \n' + absurl
-
-            # data = {'email_body':email_body,'to_email':user.email,
-            #         'email_subject':'Verify your email'}
             data = {'token':str(token),
                     'to_email': user.email,
                     'email_subject':'Verify your email',
@@ -239,9 +229,33 @@ class DeleteUserAPIView(APIView):
     )
     def delete(self, request, *args, **kwargs):
         email = request.data['email']
+        refresh_token = request.data['refresh_token']
         try:
             user = User.objects.get(email = email)
         except Exception as e:
             return Response({'Message': 'There is no user with this email.'}, status=status.HTTP_404_BAD_REQUEST)
+        token = RefreshToken(refresh_token)
+        token.blacklist()
         user.delete()
         return Response({'Message': 'User has been successfully deleted.'}, status=status.HTTP_200_OK)
+
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer =  ChangePasswordSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+        old_password = serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+        user = request.user
+        if user.check_password(old_password):
+            try:
+                validate_password(password = new_password)
+            except ValidationError as e:
+                return Response({"Error": e}, status = status.HTTP_400_BAD_REQUEST)
+            user.set_password(new_password)
+            user.save()
+            return Response({'Message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+        return Response({'Error': 'Incorrect old password.'}, status=status.HTTP_400_BAD_REQUEST)
+            

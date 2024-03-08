@@ -65,8 +65,7 @@ class DigitValidator:
         if not any(char.isdigit() for char in password):
             raise ValidationError(
                 _("This password must contain at least 1 numeric character."),
-                code="no numeric character",
-                params={"min_length": self.min_length},
+                code="no numeric character"
             )
 
     def get_help_text(self):

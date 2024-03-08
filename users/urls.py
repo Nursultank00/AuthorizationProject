@@ -1,7 +1,8 @@
 from django.urls import path
-from users.views import SignupAPIView, LoginAPIView, TokenRefreshView
-from users.views import LogoutAPIView, VerifyEmailAPIView, ResendVerifyEmailAPIView
-from users.views import DeleteUserAPIView
+
+from users.views import SignupAPIView, LoginAPIView, TokenRefreshView,\
+                        LogoutAPIView, VerifyEmailAPIView, ResendVerifyEmailAPIView,\
+                        DeleteUserAPIView, ChangePasswordAPIView
 
 urlpatterns = [
     path('login/', LoginAPIView.as_view(), name = 'authproject-login'),
@@ -10,5 +11,6 @@ urlpatterns = [
     path('logout/', LogoutAPIView.as_view(), name = 'authproject-logout'),
     path('email-verify/', VerifyEmailAPIView.as_view(), name = 'authproject-email-verify'),
     path('resend-email/', ResendVerifyEmailAPIView.as_view(), name = 'authproject-resend-email'),
-    path('delete-user/', DeleteUserAPIView.as_view(), name = 'authproject-delete')
+    path('delete-user/', DeleteUserAPIView.as_view(), name = 'authproject-delete'),
+    path('change-password/', ChangePasswordAPIView.as_view(), name = 'authproject-change-password')
 ]
